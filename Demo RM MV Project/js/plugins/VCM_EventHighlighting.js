@@ -63,12 +63,6 @@ Default: [255, 255, 255, 155]
 @desc MAP ID of the highlighting event.
 @type number
 
-@param Highlighting Event Self Switch
-@parent Event Overlay Settings
-@desc Self Switch to activate the highlighting event.
-Default: A (Choose from A, B, C and D)
-@default A
-
 @param 2 - Highlighting Conditions
 
 @param Highlight Blank Events
@@ -290,6 +284,10 @@ This means that this plugin will use any changes to those functions
 made by plugins above it in the Plugin Manager, which may, or may not
 be compatible.
 
+-----------------------------------------------------------------------------
+Dependencies
+-----------------------------------------------------------------------------
+OrangeCustomEvents
 
 -----------------------------------------------------------------------------
 Versions
@@ -343,7 +341,8 @@ SceneManager.onKeyDown = function (event) {
   if (this._scene instanceof Scene_Map && $gamePlayer.canMove()) {
     if (event.key.toUpperCase() === VCM.EventHighlighting['Event Highlighting Key']) {
       VCM.EventHighlighting.Highlight = !VCM.EventHighlighting.Highlight;
-      // TODO: parse all plugin properties once
+
+      // event highlighting duration to turn off after so many seconds automatically
       let duration = Number(VCM.EventHighlighting['Event Highlighting Duration']);
       if (VCM.EventHighlighting.Highlight && duration > 0) {
         HD.Utils.sleepSingleton("VCM_EventHighlighting", duration * 1000)
@@ -414,24 +413,27 @@ Game_Event.prototype.update = function () {
       this._highlight = false;
     }
   }
-  ///
-  if (VCM.EventHighlighting['Event Highlighting Type'] === "Event Overlay") {
-    if (!this._highlightInitializing && !this._highligtEventId && this._highlight) {
-      this._highlightInitializing = true;
-      const eventMapId = VCM.EventHighlighting['Highlighting Event Map Id']
-      const eventId = VCM.EventHighlighting['Highlighting Event Id']
-      $gameMap.copyEventFrom(eventMapId, eventId, this.x, this.y, true, undefined,
-        (newEvent) => {
-          this._highligtEventId = newEvent._eventId;
-          this._highlightInitializing = false;
-        });
-    }
 
-    let switchId = [this._mapId, this._highligtEventId, VCM.EventHighlighting['Highlighting Event Self Switch'] || "A"];
-    $gameSelfSwitches.setValue(switchId, this._highlight);
+  // If "Event Overlay"
+  if (VCM.EventHighlighting['Event Highlighting Type'] === "Event Overlay" && !this._highlightInitializing) {
+    if (!this._highligtEventId && this._highlight && this.isInsideScreen()) { // create highlighting event
+      this._highlightInitializing = true;
+      const templateEventMapId = VCM.EventHighlighting['Highlighting Event Map Id'],
+        templateEventId = VCM.EventHighlighting['Highlighting Event Id'],
+        event = this;
+      $gameMap.copyEventFrom(templateEventMapId, templateEventId, this.x, this.y, true, undefined,
+        (newEvent) => {
+          event._highligtEventId = newEvent._eventId;
+          event._highlightInitializing = false;
+        });
+    } else if (!this._highlight && this._highligtEventId) { // delete highlighting event
+      $gameSystem.removeCustomEvent(this._mapId, this._highligtEventId);
+      $gameMap.eraseEvent(this._highligtEventId);
+      delete $gameMap._events[this._highligtEventId]
+      this._highligtEventId = null;
+    }
   }
 };
-
 //-----------------------------------------------------------------------------
 // Sprite_Character
 //
@@ -441,16 +443,20 @@ VCM.EventHighlightingAlias.Sprite_Character_update = Sprite_Character.prototype.
 Sprite_Character.prototype.update = function () {
   VCM.EventHighlightingAlias.Sprite_Character_update.call(this);
   ///
-  if (this._character._eventId && VCM.EventHighlighting['Event Highlighting Type'] === "Color Blend Overlay") {
-    if (this._character._highlight && this._character._setHighlightColor !== null && !this._blendColor.equals(this._character._setHighlightColor)) {
-      // change highlight color
-      this.setBlendColor(this._character._setHighlightColor);
-    } else if (this._character._highlight && this._character._setHighlightColor === null && !this._blendColor.equals(VCM.EventHighlighting['Event Highlight Color'])) {
-      // highlight event
-      this.setBlendColor(VCM.EventHighlighting['Event Highlight Color']);
-    } else if (!this._character._highlight && !this._blendColor.equals([0, 0, 0, 0])) {
-      // remove highlight
-      this.setBlendColor([0, 0, 0, 0]);
+
+  let event = this._character;
+  if (event._eventId) {
+    if (VCM.EventHighlighting['Event Highlighting Type'] === "Color Blend Overlay") {
+      if (event._highlight && event._setHighlightColor !== null && !this._blendColor.equals(event._setHighlightColor)) {
+        // change highlight color
+        this.setBlendColor(event._setHighlightColor);
+      } else if (event._highlight && event._setHighlightColor === null && !this._blendColor.equals(VCM.EventHighlighting['Event Highlight Color'])) {
+        // highlight event
+        this.setBlendColor(VCM.EventHighlighting['Event Highlight Color']);
+      } else if (!event._highlight && !this._blendColor.equals([0, 0, 0, 0])) {
+        // remove highlight
+        this.setBlendColor([0, 0, 0, 0]);
+      }
     }
   }
   ///

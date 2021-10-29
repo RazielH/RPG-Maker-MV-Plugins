@@ -1,3 +1,5 @@
+"use strict";
+
 var HD = HD || {};
 HD.Utils = HD.Utils || {};
 
@@ -43,6 +45,10 @@ Imported.HD_Utils = true;
 
 })(HD.Utils)
 
+// -----------------------------------------
+//           Game Variable
+// -----------------------------------------
+
 Game_Variables.prototype.valueByName = function (variableName) {
     if ($dataSystem && $dataSystem.variables) {
         const index = $dataSystem.variables.indexOf(variableName);
@@ -61,6 +67,10 @@ Game_Variables.prototype.setValueByName = function (name, value) {
     }
 };
 
+// -----------------------------------------
+//           Game Switches
+// -----------------------------------------
+
 Game_Switches.prototype.valueByName = function (name) {
     if (!!$dataSystem && !!$dataSystem.switches) {
         const index = $dataSystem.switches.indexOf(name);
@@ -78,3 +88,18 @@ Game_Switches.prototype.setValueByName = function (name, value) {
         }
     }
 };
+
+// -----------------------------------------
+//           Game Event
+// -----------------------------------------
+
+Game_Event.prototype.isInsideScreen = function () {
+    let screen = {
+        x1: $gameMap.displayX(),
+        y1: $gameMap.displayY(),
+        x2: $gameMap.displayX() + $gameMap.screenTileX() - 1,
+        y2: $gameMap.displayY() + $gameMap.screenTileY() - 1
+    };
+    return screen.x1 <= this.x && this.x <= screen.x2
+      && screen.y1 <= this.y && this.y <= screen.y2;
+}
