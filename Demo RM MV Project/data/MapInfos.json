@@ -1,7 +1,7 @@
 [
 null,
-{"id":1,"expanded":true,"name":"Event Highlighting","order":1,"parentId":0,"scrollX":595.8,"scrollY":382.8},
+{"id":1,"expanded":true,"name":"Event Highlighting","order":1,"parentId":0,"scrollX":982.8,"scrollY":553.1999999999999},
 {"id":2,"expanded":false,"name":"MAP002","order":2,"parentId":1,"scrollX":595.8,"scrollY":382.8},
-{"id":3,"expanded":false,"name":"TEMPLATE","order":3,"parentId":1,"scrollX":595.8,"scrollY":382.8},
-{"id":4,"expanded":false,"name":"HD_Log","order":4,"parentId":0,"scrollX":595.8,"scrollY":382.8}
+{"id":3,"expanded":false,"name":"TEMPLATE","order":3,"parentId":1,"scrollX":982.8,"scrollY":553.1999999999999},
+{"id":4,"expanded":false,"name":"HD_Log","order":4,"parentId":0,"scrollX":982.8,"scrollY":553.1999999999999}
 ]
